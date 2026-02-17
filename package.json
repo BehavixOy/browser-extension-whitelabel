@@ -1,0 +1,16 @@
+{
+  "name": "YOUR_APP_NAME",
+  "version": "1.0.0",
+  "description": "YOUR_APP_NAME browser extension",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "behavix_sdk": "https://artifacts.behavix.io/browser_sdk/behavix_sdk-1.1.20.tgz"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "esbuild": "^0.25.9",
+    "typescript": "^5.4.5"
+  }
+}

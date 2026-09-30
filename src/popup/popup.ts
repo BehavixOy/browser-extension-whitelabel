@@ -1,4 +1,4 @@
-import BehavixSdk from 'behavix_sdk'
+import BehavixSdk from '@behavix/browser-sdk'
 
 document.addEventListener('DOMContentLoaded', async () => {
   await BehavixSdk.initialize()

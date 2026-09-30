@@ -1,0 +1,26 @@
+name: Build
+
+# Build every day with the latest 1.x SDK from npm.
+# There is no lockfile, so each run installs the newest SDK release.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [chrome, edge, firefox]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm ls @behavix/browser-sdk
+      - run: npx tsc --noEmit
+      - run: npm run build -- ${{ matrix.platform }}

@@ -1,0 +1,97 @@
+name: Publish to stores
+
+# This workflow is a template. It does not work in this repository,
+# because the store secrets are not set here.
+# To use it, do the setup in README.md ("Publish to the stores automatically"),
+# then remove the comment marks from the "push" trigger below.
+on:
+  workflow_dispatch:
+  # push:
+  #   tags:
+  #     - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  chrome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run build -- chrome
+      - run: cd dist/chrome && zip -r ../../chrome.zip .
+      # --auto-publish also submits the version for review.
+      # Without it, the version stays a draft in the dashboard.
+      - run: npx chrome-webstore-upload-cli@3 upload --source chrome.zip --auto-publish
+        env:
+          EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+  firefox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run build -- firefox
+      # AMO asks for the source code, because the bundle is minified.
+      - run: git archive --format=zip -o source.zip HEAD
+      # web-ext reads the add-on ID from browser_specific_settings.gecko.id.
+      # --approval-timeout 0 stops after the upload. It does not wait for the review.
+      - run: >
+          npx web-ext@8 sign
+          --source-dir dist/firefox
+          --channel listed
+          --upload-source-code source.zip
+          --approval-timeout 0
+          --api-key "$FIREFOX_API_ISSUER"
+          --api-secret "$FIREFOX_API_SECRET"
+        env:
+          FIREFOX_API_ISSUER: ${{ secrets.FIREFOX_API_ISSUER }}
+          FIREFOX_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
+
+  edge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run build -- edge
+      - run: cd dist/edge && zip -r ../../edge.zip .
+      - name: Upload and submit to Edge Add-ons
+        env:
+          PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          API_KEY: ${{ secrets.EDGE_API_KEY }}
+        run: |
+          set -euo pipefail
+          API="https://api.addons.microsoftedge.microsoft.com/v1/products/$PRODUCT_ID/submissions"
+          AUTH=(-H "Authorization: ApiKey $API_KEY" -H "X-ClientID: $CLIENT_ID")
+
+          # 1. Upload the package. The Location header has the operation ID.
+          OP=$(curl -sS --fail -D - -o /dev/null "${AUTH[@]}" \
+            -H "Content-Type: application/zip" \
+            --data-binary @edge.zip "$API/draft/package" \
+            | awk 'tolower($1)=="location:" {print $2}' | tr -d '\r')
+
+          # 2. Wait until the store processes the upload.
+          STATUS=""
+          for _ in $(seq 30); do
+            STATUS=$(curl -sS --fail "${AUTH[@]}" "$API/draft/package/operations/$OP" | jq -r .status)
+            echo "Upload status: $STATUS"
+            [ "$STATUS" = "Succeeded" ] && break
+            [ "$STATUS" = "Failed" ] && exit 1
+            sleep 5
+          done
+          [ "$STATUS" = "Succeeded" ]
+
+          # 3. Submit the draft for certification.
+          curl -sS --fail "${AUTH[@]}" -H "Content-Type: application/json" \
+            -d "{\"notes\": \"Version $GITHUB_REF_NAME\"}" "$API"

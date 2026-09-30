@@ -62,6 +62,68 @@ Your extension should now be installed and active!
 To make the matching of your user id to behavix user id, call the `BehavixSDK.setUser()` function. 
 See `src/service-worker/background.ts` and the commented call to `setUser()`
 
+## Publish to the stores automatically
+
+The workflow `.github/workflows/publish.yml` is a template. It builds the extension and publishes it to the Chrome Web Store, Firefox Add-ons (AMO) and Microsoft Edge Add-ons. It does not work in this repository, because the store secrets are not set here.
+
+Each store needs a one-time manual setup. After that, the workflow reads the credentials from GitHub secrets. You can use different secret names, but then change the names in the workflow too.
+
+### Chrome Web Store
+
+What to register in the store:
+1. Create a Chrome Web Store developer account, or use an existing one. Google charges a one-time fee of $5 for a new account.
+2. Upload the first version manually. Fill in the store listing and the Privacy tab. Copy the item ID (the extension ID).
+3. In Google Cloud Console, create a project, or use an existing one. Enable the Chrome Web Store API.
+4. Configure the OAuth consent screen, then set its publishing status to "In production". If the status stays "Testing", the refresh token expires after 7 days.
+5. Create an OAuth client ID. Then get a refresh token for the scope `https://www.googleapis.com/auth/chromewebstore`, for example with `npx chrome-webstore-upload-keys`.
+
+GitHub secrets:
+- `CHROME_EXTENSION_ID`: the item ID
+- `CHROME_CLIENT_ID`: the OAuth client ID
+- `CHROME_CLIENT_SECRET`: the OAuth client secret
+- `CHROME_REFRESH_TOKEN`: the refresh token
+
+The `chrome` job uploads the zip and submits the version for review.
+
+### Firefox Add-ons (AMO)
+
+What to register in the store:
+1. Create an AMO developer account, or use an existing one.
+2. In `src/firefox/manifest.json`, set `browser_specific_settings.gecko.id` to your own add-on ID, for example `extension@yourcompany.com`.
+3. Submit the first version manually. The bundle is minified, so AMO asks for the source code. Upload a source zip too.
+4. On https://addons.mozilla.org/developers/addon/api/key/, create API credentials. You get a JWT issuer and a JWT secret.
+
+GitHub secrets:
+- `FIREFOX_API_ISSUER`: the JWT issuer
+- `FIREFOX_API_SECRET`: the JWT secret
+
+The `firefox` job signs the extension on the listed channel with `web-ext`. It uploads the source zip for the reviewer. It does not wait for the review.
+
+### Microsoft Edge Add-ons
+
+What to register in the store:
+1. Create a Microsoft Partner Center account for Microsoft Edge, or use an existing one. There is no fee.
+2. Submit the first version manually and wait for certification. Certification can take up to 7 business days.
+3. In Partner Center, open Publish API and click "Create API credentials". You get a Client ID and an API key. The API key is shown only one time, so save it immediately. Copy the Product ID from the same page too.
+
+GitHub secrets:
+- `EDGE_PRODUCT_ID`: the Product ID
+- `EDGE_CLIENT_ID`: the Client ID
+- `EDGE_API_KEY`: the API key
+
+The `edge` job uploads the zip, waits until the store processes it, and submits the draft for certification.
+
+The Edge API key has an expiry date, so set a reminder for it. Several keys can be active at the same time. To rotate the key, create a new one, update the secret, and let the old key expire.
+
+### Enable the workflow
+
+1. In your GitHub repository, go to Settings → Secrets and variables → Actions. Add each secret there.
+2. In `.github/workflows/publish.yml`, remove the comment marks from the `push` trigger.
+3. For each release, increase `version` in all three `src/<platform>/manifest.json` files. Each store rejects a version number that it already has.
+4. Push a tag with the same version, for example `git tag 1.0.1 && git push origin 1.0.1`.
+
+You can also start the workflow manually from the Actions tab.
+
 ## Core Concepts Explained
 
 -   **`service-worker/background.ts`**: This is the extension's central event handler. It runs in the background and is ideal for managing state, listening for browser events (like tab updates or installation), and coordinating communication between different parts of your extension.

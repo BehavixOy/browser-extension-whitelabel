@@ -22,7 +22,9 @@ async function build(targetPlatform) {
     'src/service-worker/background.ts',
     'src/content-scripts/content.ts',
     'src/popup/popup.ts',
-    'src/web-accessible-resources/script.ts',
+    // The SDK content script loads the page script from injectable_script.js
+    // at the root of the extension.
+    { in: 'src/web-accessible-resources/script.ts', out: 'injectable_script' },
   ];
 
   const outputDir = `dist/${targetPlatform}`

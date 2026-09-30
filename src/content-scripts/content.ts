@@ -1,3 +1,3 @@
-import BehavixSdk from 'behavix_sdk'
+import BehavixSdk from '@behavix/browser-sdk'
 
 BehavixSdk.initialize()

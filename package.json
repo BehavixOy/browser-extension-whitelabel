@@ -6,7 +6,7 @@
     "build": "node build.mjs"
   },
   "dependencies": {
-    "behavix_sdk": "https://artifacts.behavix.io/browser_sdk/behavix_sdk-1.1.28.tgz"
+    "@behavix/browser-sdk": "1.1.28"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",

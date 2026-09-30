@@ -1,4 +1,4 @@
-import BehavixSdk from 'behavix_sdk'
+import BehavixSdk from '@behavix/browser-sdk'
 
 (async () => {
     await BehavixSdk.initialize("YOUR_API_KEY")

@@ -14,6 +14,7 @@ Follow these steps to get the boilerplate up and running.
 2. Replace `MY_TERMS_OF_SERVICE_LINK` with link to your terms of service or remove it from the config object to use the default Behavix terms of service
 3. Replace `MY_PRIVACY_POLICY_LINK` with link to your privacy policy or remove it from the config object to use the default Behavix privacy policy 
 4. Replace the images in `src/assets` to your app icons
+5. In `src/firefox/manifest.json`, replace `YOUR_ADDON_ID@YOUR_DOMAIN` with your Firefox add-on ID, for example `extension@yourcompany.com`. Firefox Add-ons identifies your extension by this ID, so do not change it after the first release.
 
 Install the development dependencies
 
@@ -89,7 +90,7 @@ The `chrome` job uploads the zip and submits the version for review.
 
 What to register in the store:
 1. Create an AMO developer account, or use an existing one.
-2. In `src/firefox/manifest.json`, set `browser_specific_settings.gecko.id` to your own add-on ID, for example `extension@yourcompany.com`.
+2. Make sure that `src/firefox/manifest.json` has your own add-on ID in place of `YOUR_ADDON_ID@YOUR_DOMAIN` (see Installation, step 5).
 3. Submit the first version manually. The bundle is minified, so AMO asks for the source code. Upload a source zip too.
 4. On https://addons.mozilla.org/developers/addon/api/key/, create API credentials. You get a JWT issuer and a JWT secret.
 

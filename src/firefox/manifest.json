@@ -36,7 +36,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "behavix@behavix.io",
+      "id": "YOUR_ADDON_ID@YOUR_DOMAIN",
       "data_collection_permissions": {
         "required": ["browsingActivity"],
         "optional": []

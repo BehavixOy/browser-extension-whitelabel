@@ -40,7 +40,7 @@ Please note that you need to refresh the extension files manually from chrome://
 
 **For Production:**
 
-This command will create an optimized, minified build in the `dist` folder.
+This command will create an optimized, minified build in the `dist/chrome` folder. To build for another browser, add the platform name: `npm run build -- edge` or `npm run build -- firefox`. The output goes to `dist/edge` or `dist/firefox`.
 
 ```bash
 npm run build
@@ -52,7 +52,7 @@ Once you have built the extension, you can load it into your browser:
 1.  Open Chrome and navigate to `chrome://extensions`.
 2.  Enable **Developer mode** using the toggle in the top-right corner.
 3.  Click the **Load unpacked** button.
-4.  Select the `dist` folder from the project directory.
+4.  Select the `dist/chrome` folder from the project directory.
 
 Your extension should now be installed and active!
 

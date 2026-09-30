@@ -133,7 +133,7 @@ You can also start the workflow manually from the Actions tab.
 
 -   **`popup/popup.html` & `popup.ts`**: This is the user interface that appears when a user clicks on your extension's icon in the toolbar. It's a standard HTML page where you can provide options, display information, and trigger actions.
 
--   **`web-accessible-resources/script.ts`**: Unlike content scripts, which run in an isolated sandbox, these scripts can be loaded by web pages and run in the page's own context. This is useful when you need to interact with a page's JavaScript variables or APIs directly.
+-   **`web-accessible-resources/script.ts`**: Unlike content scripts, which run in an isolated sandbox, these scripts can be loaded by web pages and run in the page's own context. This is useful when you need to interact with a page's JavaScript variables or APIs directly. The build writes this script to `injectable_script.js` at the root of the extension. The SDK content script loads it from that path, so do not change the path or remove the file from `web_accessible_resources`.
 
 ---
 

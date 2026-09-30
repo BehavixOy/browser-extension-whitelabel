@@ -21,7 +21,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["web-accessible-resources/script.js"],
+      "resources": ["injectable_script.js"],
       "matches": ["<all_urls>"]
     }
   ],
